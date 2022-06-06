@@ -8,6 +8,10 @@ type EDLFormat struct {
 	TimelineMarkers []TimelineMarker
 }
 
+const (
+	FCM_NON_DROP_FRAME = "NON-DROP FRAME"
+)
+
 type TimelineMarker struct {
 	Timestamp time.Duration
 	Color     MarkerColor
@@ -35,3 +39,7 @@ const (
 	Cocoa    MarkerColor = "ResolveColorCocoa"
 	Cream    MarkerColor = "ResolveColorCream"
 )
+
+func (edl EDLFormat) ExportToFile(filepath string) {
+
+}
