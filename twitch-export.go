@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"log"
@@ -15,32 +14,27 @@ type TwitchStreamMarkerExport struct {
 }
 
 type TwitchStreamMarker struct {
-	Timestamp   time.Duration
+	Timestamp   time.Time
 	CreatorRole string
 	CreatorName string
 	Title       string
 }
 
 const (
-	ExpectedColumnCount           = 4
-	ExpectedTimestampSegmentCount = 3
+	expectedColumnCount = 4
+	csvTimestampFormat  = "15:04:05"
 )
 
 type ColumnCountError int
 
 func (e ColumnCountError) Error() string {
-	return fmt.Sprintf("input issue: expected %d columns but got %d", ExpectedColumnCount, int(e))
-}
-
-type TimestampSegmentCountError int
-
-func (e TimestampSegmentCountError) Error() string {
-	return fmt.Sprintf("input issue: expected %d timestamp segments but got %d", ExpectedTimestampSegmentCount, int(e))
+	return fmt.Sprintf("input issue: expected %d columns but got %d", expectedColumnCount, int(e))
 }
 
 func ImportCSV(filePath string) (export TwitchStreamMarkerExport, err error) {
 	f, err := os.Open(filePath)
 	if err != nil {
+		fmt.Printf("failed to open file %q: %v\n", filePath, err)
 		return
 	}
 	defer f.Close()
@@ -48,6 +42,7 @@ func ImportCSV(filePath string) (export TwitchStreamMarkerExport, err error) {
 	csvReader := csv.NewReader(f)
 	data, err := csvReader.ReadAll()
 	if err != nil {
+		fmt.Printf("failed to read csv file %q: %v\n", filePath, err)
 		return
 	}
 
@@ -67,19 +62,12 @@ func parseCSV(content [][]string) (export TwitchStreamMarkerExport, err error) {
 }
 
 func parseLine(line []string) (marker TwitchStreamMarker, err error) {
-	if len(line) != ExpectedColumnCount {
+	if len(line) != expectedColumnCount {
 		err = ColumnCountError(len(line))
 		return
 	}
 
-	timestampSegments := strings.Split(line[0], ":")
-	if len(timestampSegments) != ExpectedTimestampSegmentCount {
-		err = TimestampSegmentCountError(len(timestampSegments))
-		return
-	}
-
-	adjustedTimeString := fmt.Sprintf("%sh%sm%ss", timestampSegments[0], timestampSegments[1], timestampSegments[2])
-	marker.Timestamp, err = time.ParseDuration(adjustedTimeString)
+	marker.Timestamp, err = time.Parse(csvTimestampFormat, line[0])
 	if err != nil {
 		return
 	}

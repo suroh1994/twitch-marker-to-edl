@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 func main() {
@@ -20,14 +20,13 @@ func main() {
 
 	edl := convertExportToEdl(export)
 
-	csvFilename := path.Base(csvFile)[:len(path.Ext(csvFile))*-1]
-	edlFilename := fmt.Sprintf("%s%s.edl", path.Dir(csvFile), csvFilename)
-	edl.ExportToFile(edlFilename)
+	edlFile := generateOutputPath(csvFile)
+	edl.ExportToFile(edlFile)
 }
 
 func convertExportToEdl(export TwitchStreamMarkerExport) (edl EDLFormat) {
 	edl.Title = "Twitch Stream Markers"
-	edl.FCM = FCM_NON_DROP_FRAME
+	edl.FCM = fcmNonDropFrame
 	for _, marker := range export.Markers {
 		edl.TimelineMarkers = append(edl.TimelineMarkers, TimelineMarker{
 			Title:     marker.Title,
@@ -37,4 +36,12 @@ func convertExportToEdl(export TwitchStreamMarkerExport) (edl EDLFormat) {
 		})
 	}
 	return
+}
+
+func generateOutputPath(inputPath string) string {
+	filenameWithExtension := filepath.Base(inputPath)
+	fileExtension := filepath.Ext(inputPath)
+
+	filename := filenameWithExtension[:len(filenameWithExtension)-len(fileExtension)]
+	return filepath.Join(filepath.Dir(inputPath), filename+".edl")
 }
