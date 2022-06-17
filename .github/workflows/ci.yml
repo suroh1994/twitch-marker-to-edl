@@ -1,0 +1,64 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  # ================
+  # TEST JOB
+  #   runs on every push and PR
+  #   runs 1x3 times (see matrix)
+  # ================
+  test:
+    name: Test
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        run: go build -v .
+      - name: Test
+        run: go test -v ./...
+  # ================
+  # RELEASE JOB
+  #   runs after a success test
+  #   only runs on push "v*" tag
+  # ================
+  release:
+    name: Release
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Fetch all tags
+        run: git fetch --force --tags
+      -
+        name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
