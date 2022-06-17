@@ -6,11 +6,16 @@ import (
 	"path/filepath"
 )
 
+var version = "0.0.0"
+
 func main() {
+	fmt.Printf("Twitch2Davinci version %s\n", version)
+
 	if len(os.Args) < 2 {
 		fmt.Printf("incorrect usage: program csvfile")
 		return
 	}
+
 	csvFile := os.Args[1]
 	export, err := ImportCSV(csvFile)
 	if err != nil {
