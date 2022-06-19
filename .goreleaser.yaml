@@ -43,8 +43,8 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - '^doc[(\\w)]*:+.*$'
+      - '^test[(\\w)]*:+.*$'
   groups:
     - title: Features
       regexp: "^.*feat[(\\w)]*:+.*$"
