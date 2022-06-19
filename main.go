@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 )
 
-var version = "0.0.0"
+var build = "0.0.0"
 
 func main() {
-	fmt.Printf("Twitch2Davinci version %s\n", version)
+	fmt.Printf("Twitch2Davinci version %s\n", build)
 
 	if len(os.Args) < 2 {
 		fmt.Printf("incorrect usage: program csvfile")
